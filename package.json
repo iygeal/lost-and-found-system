@@ -2,7 +2,7 @@
   "name": "lost-and-found-system",
   "version": "1.0.0",
   "description": "This repository contains the backend code of a simple Lost and Found System using ExpressJS framework and MongoDB as database.",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
