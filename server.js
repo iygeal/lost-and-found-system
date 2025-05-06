@@ -34,3 +34,33 @@ mongoose
   .catch((err) => {
     console.error('Failed to connect to MongoDB:', err);
   });
+
+
+  // API Routes
+
+  // Route to add a new found item
+  app.post('/add-item', async (request, response) => {
+
+    // Get item details from request body
+    const { itemName, description, locationFound, dateFound, claimed } = request.body;
+
+    // Check if itemName is provided
+    if (!itemName) {
+      return response.status(400).json({ error: 'Item name is required' });
+    }
+
+    // Create a new item object with the provided details
+    const newItem = new Item({
+      itemName,
+      description,
+      locationFound,
+      dateFound,
+      claimed,
+    });
+
+    // Save the item to the database
+    await newItem.save();
+
+    // Return a success response with the saved item details
+    response.status(201).json({message: 'Item added successfully', newItem});
+  })
