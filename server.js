@@ -35,32 +35,104 @@ mongoose
     console.error('Failed to connect to MongoDB:', err);
   });
 
+// API Routes
 
-  // API Routes
+// Route to add a new found item
+app.post('/api/v1/items', async (request, response) => {
+  // Get item details from request body
+  const { itemName, description, locationFound, dateFound, claimed } =
+    request.body;
 
-  // Route to add a new found item
-  app.post('/api/v1/items', async (request, response) => {
+  // Check if itemName is provided
+  if (!itemName) {
+    return response.status(400).json({ error: 'Item name is required' });
+  }
 
-    // Get item details from request body
-    const { itemName, description, locationFound, dateFound, claimed } = request.body;
+  // Create a new item object with the provided details
+  const newItem = new Item({
+    itemName,
+    description,
+    locationFound,
+    dateFound,
+    claimed,
+  });
 
-    // Check if itemName is provided
-    if (!itemName) {
-      return response.status(400).json({ error: 'Item name is required' });
-    }
+  // Save the item to the database
+  await newItem.save();
 
-    // Create a new item object with the provided details
-    const newItem = new Item({
-      itemName,
-      description,
-      locationFound,
-      dateFound,
-      claimed,
-    });
+  // Return a success response with the saved item details
+  response.status(201).json({ message: 'Item added successfully', newItem });
+});
 
-    // Save the item to the database
-    await newItem.save();
+// Route to view all unclaimed items
+app.get('/api/v1/items/unclaimed', async (request, response) => {
+  // Find all items in the database where claimed is false
+  const unclaimedItems = await Item.find({ claimed: false });
 
-    // Return a success response with the saved item details
-    response.status(201).json({message: 'Item added successfully', newItem});
-  })
+  // Return a success response with the unclaimed items
+  response.status(200).json(unclaimedItems);
+});
+
+// Route to view one item by ID
+app.get('/api/v1/items/:id', async (request, response) => {
+  // Get the item's ID from the request parameters
+  const { id } = request.params;
+
+  // Find the item in the database by its ID
+  const item = await Item.findById(id);
+
+  // If no item is found by the ID, return an error response
+  if (!item) {
+    return response.status(404).json({ error: 'No item found by that ID' });
+  }
+
+  // If that's not the case, it means the item was found
+  // Return a success response with the item details
+  response.status(200).json(item);
+});
+
+// Route to update an item's details or mark it as claimed
+app.put('/api/v1/items/:id', async (request, response) => {
+  // Get the item's ID from the request parameters
+  const { id } = request.params;
+
+  // Data to be sent in the body to update item
+  const updateData = request.body;
+
+  // Find the item by the ID and update it
+  const updatedItem = await Item.findByIdAndUpdate(id, updateData, {
+    new: true,
+  });
+
+  // If no item is found by the ID, return an error response
+  if (!updatedItem) {
+    return response.status(404).json({ error: 'No item found by that ID' });
+  }
+
+  // If that's not the case, it means the item was found and updated
+  // Return a success response with the updated item details
+  response.status(200).json({
+    message: 'Item updated successfully',
+    updatedItem,
+  });
+});
+
+// Delete an old/irrelevant item from the database
+app.delete('/api/v1/items/:id', async (request, response) => {
+  // Get the item's ID from the request parameters
+  const { id } = request.params;
+
+  // Find the item by the ID and delete it
+  const deletedItem = await Item.findByIdAndDelete(id);
+
+  // If no item is found by the ID, return an error response
+  if (!deletedItem) {
+    return response.status(404).json({ error: 'No item found by that ID' });
+  }
+
+  // If that's not the case, it means the item was found and deleted
+  // Return a success response
+  response.status(200).json({
+    message: 'Item deleted successfully from the database.',
+  });
+});
