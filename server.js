@@ -39,7 +39,7 @@ mongoose
   // API Routes
 
   // Route to add a new found item
-  app.post('/add-item', async (request, response) => {
+  app.post('/api/v1/items', async (request, response) => {
 
     // Get item details from request body
     const { itemName, description, locationFound, dateFound, claimed } = request.body;
